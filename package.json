@@ -1,18 +1,18 @@
 {
-  "name": "kao-newrelic",
+  "name": "koa-newrelic",
   "description": "",
   "version": "0.0.1",
-  "homepage": "https://github.com/AfterShip/kao-newrelic",
+  "homepage": "https://github.com/AfterShip/koa-newrelic",
   "author": {
     "name": "AfterShip",
     "email": "support@aftership.com"
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com/AfterShip/kao-newrelic.git"
+    "url": "git://github.com/AfterShip/koa-newrelic.git"
   },
   "bugs": {
-    "url": "https://github.com/AfterShip/kao-newrelic/issues"
+    "url": "https://github.com/AfterShip/koa-newrelic/issues"
   },
   "main": "index.js",
   "engines": {
@@ -33,7 +33,7 @@
     "pre-commit": "^1.1.2"
   },
   "keywords": [
-    "kao",
+    "koa",
     "new relic",
     "newrelic"
   ],

@@ -1,9 +1,9 @@
-# kao-newrelic
+# koa-newrelic
 
 
 ## Installation
 ```
-npm install kao-newrelic
+npm install koa-newrelic
 
 ```
 
