@@ -1,6 +1,6 @@
 {
   "name": "koa-newrelic",
-  "description": "",
+  "description": "Koa middleware to allow Newrelic monitor Koa applications",
   "version": "0.0.1",
   "homepage": "https://github.com/AfterShip/koa-newrelic",
   "author": {
@@ -19,20 +19,18 @@
     "node": ">= 4.2"
   },
   "scripts": {
-    "lint": "eslint --ext .jsx,.js .",
-    "test": "eslint --ext .jsx,.js . && grunt coverage"
+    "lint": "node_modules/eslint/bin/eslint.js .",
+    "test": "mocha test"
   },
   "dependencies": {},
   "devDependencies": {
-    "eslint-config-aftership": "^2.0.0",
-    "grunt": "^1.0.1",
-    "grunt-mocha-istanbul": "^4.0.2",
-    "istanbul": "^0.4.1",
+    "chai": "^3.5.0",
+    "eslint": "^1.10.3",
+    "eslint-config-aftership": "^1.5.0",
     "koa": "^1.2.0",
     "koa-router": "^5.4.0",
-    "load-grunt-config": "^0.19.1",
     "mocha": "^2.3.4",
-    "pre-commit": "^1.1.2"
+    "supertest": "^1.2.0"
   },
   "keywords": [
     "koa",
@@ -40,8 +38,5 @@
     "newrelic"
   ],
   "license": "MIT",
-  "pre-commit": [
-    "lint"
-  ],
   "private": false
 }
