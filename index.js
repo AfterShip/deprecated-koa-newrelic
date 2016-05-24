@@ -12,6 +12,23 @@ const DEFAULT_STATIC_EXTENSIONS = [
 
 const extRegExp = /\/[^\/]+\.(\w+)$/;
 
+let wrappedFunctions = [];
+
+function registerWrapped(obj, name) {
+	wrappedFunctions.push({
+		obj,
+		name
+	});
+}
+
+function unwrap() {
+	while (wrappedFunctions.length) {
+		let wrapped = wrappedFunctions.pop();
+		let wrappedFunction = wrapped.obj[wrapped.name];
+		wrapped.obj[wrapped.name] = wrappedFunction._original;
+	}
+}
+
 /**
  * Create a newrelic middleware.
  * Need to be called before any koa.use & router.register
@@ -35,6 +52,13 @@ const extRegExp = /\/[^\/]+\.(\w+)$/;
  * @return {Function}
  */
 module.exports = function (newrelic, opts) {
+	// unwrap wrapped functions if any
+	unwrap();
+
+	if (!newrelic || typeof newrelic !== 'object' || !newrelic.agent) {
+		throw new Error('Invalid newrelic agent');
+	}
+
 	opts = opts || {};
 
 	// middleware traces
@@ -85,6 +109,8 @@ module.exports = function (newrelic, opts) {
 				let wrapped = wrapMiddleware(middleware);
 				return originalUse.call(this, wrapped);
 			};
+			Koa.prototype.use._original = originalUse;
+			registerWrapped(Koa.prototype, 'use');
 
 			try {
 				const Router = require('koa-router');
@@ -99,6 +125,8 @@ module.exports = function (newrelic, opts) {
 					arguments[2] = wrappedMiddlewares;
 					return originalRegister.apply(this, arguments);
 				};
+				Router.prototype.register._original = originalRegister;
+				registerWrapped(Router.prototype, 'register');
 			} catch (e) {
 				// app didn't use koa-router
 			}
@@ -114,7 +142,8 @@ module.exports = function (newrelic, opts) {
 		parseTransactionName = opts.customTransactionName;
 	} else {
 		// newrelic has frontend display logic, which will format the transaction name if it's under express
-		parseTransactionName = (method, path) => 'Expressjs/' + method + '/' + path;
+		// (method, path) => 'Expressjs/' + method + '/' + path;
+		parseTransactionName = (method, path) => 'Koajs/' + (path[0] === '/' ? path.slice(1) : path) + '#' + method;
 	}
 
 	function setTransactionName(method, path) {
