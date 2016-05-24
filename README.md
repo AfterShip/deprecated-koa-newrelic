@@ -30,7 +30,7 @@ To record traces of middlewares, please initialize koa-newrelic before adding an
  - `middlewareTrace` Boolean for if need traces for each middleware. Defaults to `false`
  - `groupStaticResources` Boolean for if need to group transactions by file extension. Defaults to `false`
  - `staticExtensions` Array of file extensions will be grouped if `groupStaticResources` is true. Defaults to `['svg','png','jpg','gif','css','js','html']`
- - `customTransactionName` Function to customize transaction metrics name by `method` and route `path`. Defaults to `(method, path) => 'Expressjs/' + method + '/' + path`
+ - `customTransactionName` Function to customize transaction metrics name by `method` and route `path`. Defaults to `(method, path) => 'Koajs/' + (path[0] === '/' ? path.slice(1) : path) + '#' + method`
 
 ## Examples
 ```javascript
