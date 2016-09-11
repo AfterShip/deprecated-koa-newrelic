@@ -147,7 +147,7 @@ module.exports = function (newrelic, opts) {
 	}
 
 	function setTransactionName(method, path) {
-		newrelic.agent.getTransaction().partialName = parseTransactionName(method, path);
+		newrelic.setTransactionName(parseTransactionName(method, path));
 	}
 
 	return function* koaNewrelic(next) {
