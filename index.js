@@ -162,6 +162,8 @@ module.exports = function (newrelic, opts) {
 			}
 			setTransactionName(ctx.method, ctx._matchedRoute);
 			return;
+		} else if (ctx.originalUrl) {
+			setTransactionName(ctx.method, ctx.originalUrl);
 		}
 
 		// group static resources
