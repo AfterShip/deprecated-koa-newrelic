@@ -1,5 +1,7 @@
 'use strict';
 
+/* eslint-disable no-empty-function */
+
 const KoaNewrelic = require('../index');
 
 const koa = require('koa');
@@ -44,7 +46,7 @@ describe('koa-newrelic route mapping', function () {
 
 		app.use(koaNewrelic);
 		router.use(route, function* () {
-			return;
+
 		});
 
 		app.use(router.routes());
@@ -60,7 +62,7 @@ describe('koa-newrelic route mapping', function () {
 	it('should let newrelic transaction name untouched if no matched route', function (done) {
 		app.use(koaNewrelic);
 		router.use(function* () {
-			return;
+
 		});
 
 		app.use(router.routes());
@@ -135,7 +137,7 @@ describe('koa-newrelic group static resouces', function () {
 		app.use(koaNewrelic);
 
 		router.use('/test/:file', function* () {
-			return;
+
 		});
 
 		app.use(router.routes());
@@ -198,7 +200,7 @@ describe('koa-newrelic custom transaction metric name', function () {
 	it('should set newrelic transaction name in custom way', function (done) {
 		app.use(koaNewrelic);
 		router.use('/test/:id', function* () {
-			return;
+
 		});
 
 		app.use(router.routes());
@@ -236,7 +238,7 @@ describe('koa-newrelic middleware traces', function () {
 		});
 
 		app.use(function* middlewareC() {
-			return;
+
 		});
 
 		request(app.listen())
@@ -259,7 +261,7 @@ describe('koa-newrelic middleware traces', function () {
 		router.get('/test/:id', function* middlewareB(next) {
 			yield next;
 		}, function* middlewareC() {
-			return;
+
 		});
 
 		app.use(router.routes());
