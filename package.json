@@ -25,8 +25,8 @@
   "dependencies": {},
   "devDependencies": {
     "chai": "^3.5.0",
-    "eslint": "^1.10.3",
-    "eslint-config-aftership": "^1.5.0",
+    "eslint": "^3.13.0",
+    "eslint-config-aftership": "^3.2.1",
     "koa": "^1.2.0",
     "koa-router": "^5.4.0",
     "mocha": "^2.3.4",

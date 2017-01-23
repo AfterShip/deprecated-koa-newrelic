@@ -10,7 +10,7 @@ const DEFAULT_STATIC_EXTENSIONS = [
 	'html'
 ];
 
-const extRegExp = /\/[^\/]+\.(\w+)$/;
+const extRegExp = /\/[^/]+\.(\w+)$/;
 
 let wrappedFunctions = [];
 
@@ -175,7 +175,6 @@ module.exports = function (newrelic, opts) {
 					let extensions = Array.isArray(opts.staticExtensions) ? opts.staticExtensions : DEFAULT_STATIC_EXTENSIONS;
 					if (extensions.indexOf(ext) !== -1) {
 						setTransactionName(ctx.method, '/*.' + ext);
-						return;
 					}
 				}
 			}
