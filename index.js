@@ -55,7 +55,7 @@ module.exports = function (newrelic, opts) {
 	// unwrap wrapped functions if any
 	unwrap();
 
-	if (!newrelic || typeof newrelic !== 'object' || !newrelic.agent) {
+	if (!newrelic || typeof newrelic !== 'object') {
 		throw new Error('Invalid newrelic agent');
 	}
 
@@ -162,8 +162,6 @@ module.exports = function (newrelic, opts) {
 			}
 			setTransactionName(ctx.method, ctx._matchedRoute);
 			return;
-		} else if (ctx.originalUrl) {
-			setTransactionName(ctx.method, ctx.originalUrl);
 		}
 
 		// group static resources
