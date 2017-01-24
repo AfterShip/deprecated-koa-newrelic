@@ -2,88 +2,89 @@
 
 /* eslint-disable no-empty-function */
 
-const KoaNewrelic = require('../index');
+// need following to trick newrelic to work without config
+process.env.NEW_RELIC_NO_CONFIG_FILE = true;
+const NewrelicApi = require('newrelic/stub_api');
+const newrelic = new NewrelicApi();
 
+const KoaNewrelic = require('../index');
 const koa = require('koa');
 const Router = require('koa-router');
 const request = require('supertest');
+const sinon = require('sinon');
 
 const expect = require('chai').expect;
 
-let mockNewrelic = {
-	agent: {
-		getTransaction: function () {
-			return transanction;
-		}
-	},
-	createTracer: function (name) {
-		if (!traces[name]) {
-			traces[name] = 0;
-		}
-
-		return function () {
-			traces[name]++;
-		};
-	}
-};
 
 let app;
 let router;
-let transanction;
-let traces;
 let koaNewrelic;
 
 describe('koa-newrelic route mapping', function () {
-	beforeEach(function () {
+	beforeEach(() => {
 		app = koa();
 		router = new Router();
-		transanction = {};
-		koaNewrelic = KoaNewrelic(mockNewrelic);
+		koaNewrelic = KoaNewrelic(newrelic);
+
+		if (typeof newrelic.setTransactionName === 'function') {
+			sinon.spy(newrelic, 'setTransactionName');
+		}
+	});
+
+	afterEach(() => {
+		if (typeof newrelic.setTransactionName === 'function') {
+			newrelic.setTransactionName.restore();
+		}
 	});
 
 	it('should set newrelic transaction name by route if route matched', function (done) {
 		let route = '/test/:id';
 
 		app.use(koaNewrelic);
-		router.use(route, function* () {
-
-		});
+		router.use(route, function* () {});
 
 		app.use(router.routes());
 
 		request(app.listen())
 			.get('/test/123')
-			.end(function () {
-				expect(transanction.partialName).to.equal('Koajs' + route + '#GET');
+			.end(() => {
+				expect(newrelic.setTransactionName.calledWith('Koajs' + route + '#GET')).to.be.true;
 				done();
 			});
 	});
 
 	it('should let newrelic transaction name untouched if no matched route', function (done) {
 		app.use(koaNewrelic);
-		router.use(function* () {
-
-		});
+		router.use(function* () {});
 
 		app.use(router.routes());
 
 		request(app.listen())
 			.get('/test/123')
-			.end(function () {
-				expect(transanction.partialName).to.be.undefined;
+			.end(() => {
+				expect(newrelic.setTransactionName.called).to.be.false;
 				done();
 			});
 	});
 });
 
 describe('koa-newrelic group static resouces', function () {
-	beforeEach(function () {
+	beforeEach(() => {
 		app = koa();
 		router = new Router();
-		transanction = {};
-		koaNewrelic = KoaNewrelic(mockNewrelic, {
+		koaNewrelic = KoaNewrelic(newrelic, {
 			groupStaticResources: true
 		});
+
+		if (typeof newrelic.setTransactionName === 'function') {
+			sinon.spy(newrelic, 'setTransactionName');
+		}
+	});
+
+	afterEach(() => {
+		if (typeof newrelic.setTransactionName === 'function') {
+			newrelic.setTransactionName.restore();
+		}
 	});
 
 	it('should set newrelic transaction name to *.ext if get path end with .ext', function (done) {
@@ -91,8 +92,8 @@ describe('koa-newrelic group static resouces', function () {
 
 		request(app.listen())
 			.get('/test/123.js')
-			.end(function () {
-				expect(transanction.partialName).to.equal('Koajs/*.js#GET');
+			.end(() => {
+				expect(newrelic.setTransactionName.calledWith('Koajs/*.js#GET')).to.be.true;
 				done();
 			});
 	});
@@ -102,8 +103,8 @@ describe('koa-newrelic group static resouces', function () {
 
 		request(app.listen())
 			.post('/test/123.js')
-			.end(function () {
-				expect(transanction.partialName).to.be.undefined;
+			.end(() => {
+				expect(newrelic.setTransactionName.called).to.be.false;
 				done();
 			});
 	});
@@ -120,15 +121,15 @@ describe('koa-newrelic group static resouces', function () {
 
 		request(app.listen())
 			.get('/test/123js')
-			.end(function () {
-				expect(transanction.partialName).to.be.undefined;
+			.end(() => {
+				expect(newrelic.setTransactionName.called).to.be.false;
 				oneDone();
 			});
 
 		request(app.listen())
 			.get('/test/12.3js')
-			.end(function () {
-				expect(transanction.partialName).to.be.undefined;
+			.end(() => {
+				expect(newrelic.setTransactionName.called).to.be.false;
 				oneDone();
 			});
 	});
@@ -136,30 +137,37 @@ describe('koa-newrelic group static resouces', function () {
 	it('should set newrelic transaction name route if route matched instead of *.ext', function (done) {
 		app.use(koaNewrelic);
 
-		router.use('/test/:file', function* () {
-
-		});
+		router.use('/test/:file', function* () {});
 
 		app.use(router.routes());
 
 		request(app.listen())
 			.get('/test/123.js')
-			.end(function () {
-				expect(transanction.partialName).to.equal('Koajs/test/:file#GET');
+			.end(() => {
+				expect(newrelic.setTransactionName.calledWith('Koajs/test/:file#GET')).to.be.true;
 				done();
 			});
 	});
 });
 
 describe('koa-newrelic custom static resouces extensions', function () {
-	beforeEach(function () {
+	beforeEach(() => {
 		app = koa();
 		router = new Router();
-		transanction = {};
-		koaNewrelic = KoaNewrelic(mockNewrelic, {
+		koaNewrelic = KoaNewrelic(newrelic, {
 			groupStaticResources: true,
 			staticExtensions: ['weird']
 		});
+
+		if (typeof newrelic.setTransactionName === 'function') {
+			sinon.spy(newrelic, 'setTransactionName');
+		}
+	});
+
+	afterEach(() => {
+		if (typeof newrelic.setTransactionName === 'function') {
+			newrelic.setTransactionName.restore();
+		}
 	});
 
 	it('should set newrelic transaction name to *.ext if get path end with .ext which matches custom extensions', function (done) {
@@ -167,8 +175,8 @@ describe('koa-newrelic custom static resouces extensions', function () {
 
 		request(app.listen())
 			.get('/test/123.weird')
-			.end(function () {
-				expect(transanction.partialName).to.equal('Koajs/*.weird#GET');
+			.end(() => {
+				expect(newrelic.setTransactionName.calledWith('Koajs/*.weird#GET')).to.be.true;
 				done();
 			});
 	});
@@ -178,37 +186,42 @@ describe('koa-newrelic custom static resouces extensions', function () {
 
 		request(app.listen())
 			.get('/test/123.js')
-			.end(function () {
-				expect(transanction.partialName).to.be.undefined;
+			.end(() => {
+				expect(newrelic.setTransactionName.called).to.be.false;
 				done();
 			});
 	});
 });
 
 describe('koa-newrelic custom transaction metric name', function () {
-	beforeEach(function () {
+	beforeEach(() => {
 		app = koa();
 		router = new Router();
-		transanction = {};
-		koaNewrelic = KoaNewrelic(mockNewrelic, {
-			customTransactionName: function (method, path) {
-				return 'Expressjs/' + method + '/' + path;
-			}
+		koaNewrelic = KoaNewrelic(newrelic, {
+			customTransactionName: (method, path) => 'Expressjs/' + method + '/' + path
 		});
+
+		if (typeof newrelic.setTransactionName === 'function') {
+			sinon.spy(newrelic, 'setTransactionName');
+		}
+	});
+
+	afterEach(() => {
+		if (typeof newrelic.setTransactionName === 'function') {
+			newrelic.setTransactionName.restore();
+		}
 	});
 
 	it('should set newrelic transaction name in custom way', function (done) {
 		app.use(koaNewrelic);
-		router.use('/test/:id', function* () {
-
-		});
+		router.use('/test/:id', function* () {});
 
 		app.use(router.routes());
 
 		request(app.listen())
 			.get('/test/123')
-			.end(function () {
-				expect(transanction.partialName).to.equal('Expressjs/GET//test/:id');
+			.end(() => {
+				expect(newrelic.setTransactionName.calledWith('Expressjs/GET//test/:id')).to.be.true;
 				done();
 			});
 	});
@@ -216,14 +229,28 @@ describe('koa-newrelic custom transaction metric name', function () {
 
 
 describe('koa-newrelic middleware traces', function () {
-	beforeEach(function () {
+	beforeEach(() => {
 		app = koa();
 		router = new Router();
-		transanction = {};
-		traces = {};
-		koaNewrelic = KoaNewrelic(mockNewrelic, {
+		koaNewrelic = KoaNewrelic(newrelic, {
 			middlewareTrace: true
 		});
+
+		if (typeof newrelic.setTransactionName === 'function') {
+			sinon.spy(newrelic, 'setTransactionName');
+		}
+		if (typeof newrelic.createTracer === 'function') {
+			sinon.spy(newrelic, 'createTracer');
+		}
+	});
+
+	afterEach(() => {
+		if (typeof newrelic.setTransactionName === 'function') {
+			newrelic.setTransactionName.restore();
+		}
+		if (typeof newrelic.createTracer === 'function') {
+			newrelic.createTracer.restore();
+		}
 	});
 
 	it('should add traces for all middlewares in koa app', function (done) {
@@ -237,16 +264,19 @@ describe('koa-newrelic middleware traces', function () {
 			yield next;
 		});
 
-		app.use(function* middlewareC() {
-
-		});
+		app.use(function* middlewareC() {});
 
 		request(app.listen())
 			.get('/test/123')
-			.end(function () {
-				expect(traces['Middleware middlewareA']).to.equal(2);
-				expect(traces['Middleware middlewareB']).to.equal(2);
-				expect(traces['Middleware middlewareC']).to.equal(1);
+			.end(() => {
+				// koanewrelic itself is also a middleware
+				expect(newrelic.createTracer.callCount).to.equal(7);
+
+				expect(newrelic.createTracer.getCall(1).calledWith('Middleware middlewareA')).to.be.true;
+				expect(newrelic.createTracer.getCall(2).calledWith('Middleware middlewareB')).to.be.true;
+				expect(newrelic.createTracer.getCall(3).calledWith('Middleware middlewareC')).to.be.true;
+				expect(newrelic.createTracer.getCall(4).calledWith('Middleware middlewareB')).to.be.true;
+				expect(newrelic.createTracer.getCall(5).calledWith('Middleware middlewareA')).to.be.true;
 				done();
 			});
 	});
@@ -260,18 +290,22 @@ describe('koa-newrelic middleware traces', function () {
 
 		router.get('/test/:id', function* middlewareB(next) {
 			yield next;
-		}, function* middlewareC() {
-
-		});
+		}, function* middlewareC() {});
 
 		app.use(router.routes());
 
 		request(app.listen())
 			.get('/test/123')
-			.end(function () {
-				expect(traces['Middleware middlewareA']).to.equal(2);
-				expect(traces['Middleware middlewareB']).to.equal(2);
-				expect(traces['Middleware middlewareC']).to.equal(1);
+			.end(() => {
+				// koanewrelic itself is also a middleware & router dispatch
+				expect(newrelic.createTracer.callCount).to.equal(8);
+
+				expect(newrelic.createTracer.getCall(2).calledWith('Middleware middlewareA')).to.be.true;
+				expect(newrelic.createTracer.getCall(3).calledWith('Middleware middlewareB')).to.be.true;
+				expect(newrelic.createTracer.getCall(4).calledWith('Middleware middlewareC')).to.be.true;
+				expect(newrelic.createTracer.getCall(5).calledWith('Middleware middlewareB')).to.be.true;
+				expect(newrelic.createTracer.getCall(6).calledWith('Middleware middlewareA')).to.be.true;
+
 				done();
 			});
 	});
