@@ -73,13 +73,13 @@ module.exports = function (newrelic, opts) {
 				}
 				let name = 'Middleware ' + (middleware.name || 'anonymous' + anonymousMW.indexOf(middleware));
 
-				let wrapped = function* (next) {
+				let wrapped = async function (ctx, next) {
 					let endTracer = newrelic.createTracer(name, () => {});
 
-					let wrappedNext = function* () {
+					let wrappedNext = async function () {
 						endTracer();
 						try {
-							yield next;
+							await next();
 						} catch (e) {
 							throw e;
 						} finally {
@@ -88,7 +88,7 @@ module.exports = function (newrelic, opts) {
 					};
 
 					try {
-						yield middleware.call(this, wrappedNext());
+						await middleware(ctx, wrappedNext);
 					} catch (e) {
 						throw e;
 					} finally {
@@ -150,10 +150,8 @@ module.exports = function (newrelic, opts) {
 		newrelic.setTransactionName(parseTransactionName(method, path));
 	}
 
-	return function* koaNewrelic(next) {
-		let ctx = this;
-
-		yield next;
+	return async function koaNewrelic(ctx, next) {
+		await next();
 
 		if (ctx._matchedRoute) {
 			// not macthed to any routes

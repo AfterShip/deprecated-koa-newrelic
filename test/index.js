@@ -22,7 +22,7 @@ let koaNewrelic;
 
 describe('koa-newrelic route mapping', function () {
 	beforeEach(() => {
-		app = koa();
+		app = new koa();
 		router = new Router();
 		koaNewrelic = KoaNewrelic(newrelic);
 
@@ -41,7 +41,7 @@ describe('koa-newrelic route mapping', function () {
 		let route = '/test/:id';
 
 		app.use(koaNewrelic);
-		router.use(route, function* () {});
+		router.all(route, function () {});
 
 		app.use(router.routes());
 
@@ -55,7 +55,7 @@ describe('koa-newrelic route mapping', function () {
 
 	it('should let newrelic transaction name untouched if no matched route', function (done) {
 		app.use(koaNewrelic);
-		router.use(function* () {});
+		router.use(function () {});
 
 		app.use(router.routes());
 
@@ -70,7 +70,7 @@ describe('koa-newrelic route mapping', function () {
 
 describe('koa-newrelic group static resouces', function () {
 	beforeEach(() => {
-		app = koa();
+		app = new koa();
 		router = new Router();
 		koaNewrelic = KoaNewrelic(newrelic, {
 			groupStaticResources: true
@@ -137,7 +137,7 @@ describe('koa-newrelic group static resouces', function () {
 	it('should set newrelic transaction name route if route matched instead of *.ext', function (done) {
 		app.use(koaNewrelic);
 
-		router.use('/test/:file', function* () {});
+		router.all('/test/:file', function () {});
 
 		app.use(router.routes());
 
@@ -152,7 +152,7 @@ describe('koa-newrelic group static resouces', function () {
 
 describe('koa-newrelic custom static resouces extensions', function () {
 	beforeEach(() => {
-		app = koa();
+		app = new koa();
 		router = new Router();
 		koaNewrelic = KoaNewrelic(newrelic, {
 			groupStaticResources: true,
@@ -195,7 +195,7 @@ describe('koa-newrelic custom static resouces extensions', function () {
 
 describe('koa-newrelic custom transaction metric name', function () {
 	beforeEach(() => {
-		app = koa();
+		app = new koa();
 		router = new Router();
 		koaNewrelic = KoaNewrelic(newrelic, {
 			customTransactionName: (method, path) => 'Expressjs/' + method + '/' + path
@@ -214,7 +214,7 @@ describe('koa-newrelic custom transaction metric name', function () {
 
 	it('should set newrelic transaction name in custom way', function (done) {
 		app.use(koaNewrelic);
-		router.use('/test/:id', function* () {});
+		router.all('/test/:id', function () {});
 
 		app.use(router.routes());
 
@@ -230,7 +230,7 @@ describe('koa-newrelic custom transaction metric name', function () {
 
 describe('koa-newrelic middleware traces', function () {
 	beforeEach(() => {
-		app = koa();
+		app = new koa();
 		router = new Router();
 		koaNewrelic = KoaNewrelic(newrelic, {
 			middlewareTrace: true
@@ -256,15 +256,15 @@ describe('koa-newrelic middleware traces', function () {
 	it('should add traces for all middlewares in koa app', function (done) {
 		app.use(koaNewrelic);
 
-		app.use(function* middlewareA(next) {
-			yield next;
+		app.use(async function middlewareA(ctx, next) {
+			await next();
 		});
 
-		app.use(function* middlewareB(next) {
-			yield next;
+		app.use(async function middlewareB(ctx, next) {
+			await next();
 		});
 
-		app.use(function* middlewareC() {});
+		app.use(async function middlewareC(ctx, next) { });
 
 		request(app.listen())
 			.get('/test/123')
@@ -284,13 +284,13 @@ describe('koa-newrelic middleware traces', function () {
 	it('should add traces for all middlewares in koa-router', function (done) {
 		app.use(koaNewrelic);
 
-		router.use(function* middlewareA(next) {
-			yield next;
+		router.use(async function middlewareA(ctx, next) {
+			await next();
 		});
 
-		router.get('/test/:id', function* middlewareB(next) {
-			yield next;
-		}, function* middlewareC() {});
+		router.get('/test/:id', async function middlewareB(ctx, next) {
+			await next();
+		}, async function middlewareC() {});
 
 		app.use(router.routes());
 
