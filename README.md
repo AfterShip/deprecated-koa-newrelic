@@ -4,6 +4,9 @@ Koa middleware to allow Newrelic monitor Koa applications like Express. Supporte
  - Group and name transactions for static resources according to file extensions
  - Traces for Koa middlewares
 
+## koa 1.x
+See [koa-newrelic 1.x](https://github.com/aftership/koa-newrelic/tree/1.x) for koa 1.x support.
+
 ## Installation
 ```
 npm install koa-newrelic
@@ -18,7 +21,7 @@ var koaNewrelic = require('koa-newrelic')(newrelic, opts);
 var app = require('koa')();
 var router = require('koa-router')();
 
-router.get('/', function *(next) {...});
+router.get('/', async function (next) {...});
 
 app
   .use(koaNewrelic);
@@ -41,8 +44,8 @@ var koaNewrelic = require('koa-newrelic')(newrelic, {
   customTransactionName: (method, path) => `Koajs/${path.slice(1)}#${method}`
 });
 
-router.get('/index', function* ctrA(next) {...});
-router.post('/login', function* ctrB(next) {...});
+router.get('/index', async function ctrA(next) {...});
+router.post('/login', async function ctrB(next) {...});
 
 app.use(koaNewrelic)
   .use(serve('/public'));
