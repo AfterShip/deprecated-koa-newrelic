@@ -1,7 +1,7 @@
 {
   "name": "koa-newrelic",
   "description": "Koa middleware to allow Newrelic monitor Koa applications",
-  "version": "1.0.1",
+  "version": "2.0.0",
   "homepage": "https://github.com/AfterShip/koa-newrelic",
   "author": {
     "name": "AfterShip",
