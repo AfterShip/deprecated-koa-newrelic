@@ -151,6 +151,10 @@ module.exports = function (newrelic, opts) {
 	}
 
 	return async function koaNewrelic(ctx, next) {
+		if (opts.usePathAsDefaultRoute) {
+			setTransactionName(ctx.method, ctx.path);
+		}
+
 		await next();
 
 		if (ctx._matchedRoute) {
