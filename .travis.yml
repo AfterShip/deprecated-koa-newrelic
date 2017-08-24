@@ -5,10 +5,13 @@ cache:
     - node_modules
 
 node_js:
-  - stable
+  - 8
 
 env:
   - CMD=test
   - CMD=lint
+
+after_script:
+  - bash <(curl -s https://codecov.io/bash) > /dev/null
 
 script: npm run $CMD
