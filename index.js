@@ -38,18 +38,20 @@ const EXT_REGEX = /\/[^/]+\.(\w+)$/;
  *
  * @param {Object} newrelic
  * @param {Object} opts
- * @param {Function} opts.customTransactionName - by default use Koajs/${path}#${method}
- * @param {String} opts.renderMethod - the ctx[renderMethod] to patch for render method, default to `render`
- * @param {[String]} opts.staticExtensions - array of default extensions will be matched to *.${ext}
- * @param {Boolean} opts.groupStaticResources - option to make static resource matched to *.${ext}, default to false
- * @param {Boolean} opts.middlewareTrace - option to trace all of the middlewares, default to false
+ * @param {Boolean} opts.groupStaticResources - Boolean for if need to group transactions by file extension. Defaults to `false`
+ * @param {Boolean} opts.middlewareTrace - Boolean for if need traces for each middleware. Defaults to `false`
+ * @param {Function} opts.customTransactionName - Function to customize transaction metrics name by `method` and route `path`.
+ *                                                Defaults to `(method, path) => 'Koajs/' + (path[0] === '/' ? path.slice(1) : path) + '#' + method`
+ * @param {String} opts.renderMethodName - name of render method for the framework. Default to `render`
+ * @param {[String]} opts.staticExtensions - Array of file extensions will be grouped if `groupStaticResources` is true.
+ *                                           Defaults to `['svg','png','jpg','gif','css','js','html']`
  *
  * @return {Function}
  */
 module.exports = function (newrelic, opts = {}) {
 	// unwrap wrapped functions if any
 	unwrap();
-	const renderMethod = opts.renderMethod || DEFAULT_RENDER_METHOD;
+	const renderMethodName = opts.renderMethodName || DEFAULT_RENDER_METHOD;
 
 	if (!newrelic || typeof newrelic !== 'object') {
 		throw new Error('Invalid newrelic agent');
@@ -76,13 +78,13 @@ module.exports = function (newrelic, opts = {}) {
 
 	return async function koaNewrelic(ctx, next) {
 		// for patching the render method
-		Object.defineProperty(ctx, renderMethod, {
+		Object.defineProperty(ctx, renderMethodName, {
 			configurable: true,
 			get() {
-				return ctx['_' + renderMethod];
+				return ctx['_' + renderMethodName];
 			},
 			set(newRender) {
-				ctx['_' + renderMethod] = async function wrappedRender(...args) {
+				ctx['_' + renderMethodName] = async function wrappedRender(...args) {
 					const endTracer = newrelic.createTracer('Render ' + args[0], () => {});
 					const result = await newRender(...args);
 					endTracer();
