@@ -19,19 +19,20 @@
     "node": ">= 4.2"
   },
   "scripts": {
-    "lint": "node_modules/eslint/bin/eslint.js .",
-    "test": "mocha test"
+    "lint": "eslint .",
+    "test": "nyc mocha test"
   },
   "dependencies": {},
   "devDependencies": {
-    "chai": "^4.0.1",
-    "eslint": "^3.13.0",
-    "eslint-config-aftership": "^3.2.1",
-    "koa": "^2.2.0",
-    "koa-router": "^7.2.0",
-    "mocha": "^3.4.2",
-    "newrelic": "^1.36.1",
-    "sinon": "^2.3.2",
+    "chai": "^4.1.1",
+    "eslint": "^4.5.0",
+    "eslint-config-aftership": "^4.0.2",
+    "koa": "^2.3.0",
+    "koa-router": "^7.2.1",
+    "mocha": "^3.5.0",
+    "newrelic": "^2.2.0",
+    "nyc": "^11.1.0",
+    "sinon": "^3.2.1",
     "supertest": "^3.0.0"
   },
   "keywords": [

@@ -1,0 +1,10 @@
+{
+  "report-dir": "./coverage",
+  "all": true,
+  "include": "index.js",
+  "reporter": [
+    "lcov",
+    "html",
+    "text-summary"
+  ]
+}
