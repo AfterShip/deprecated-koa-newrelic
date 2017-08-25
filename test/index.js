@@ -13,7 +13,7 @@ const Router = require('koa-router');
 const request = require('supertest');
 const sinon = require('sinon');
 
-const expect = require('chai').expect;
+const {expect} = require('chai');
 
 
 let app;
@@ -38,7 +38,7 @@ describe('koa-newrelic route mapping', function () {
 	});
 
 	it('should set newrelic transaction name by route if route matched', function (done) {
-		let route = '/test/:id';
+		const route = '/test/:id';
 
 		app.use(koaNewrelic);
 		router.all(route, function () {});
@@ -264,7 +264,7 @@ describe('koa-newrelic middleware traces', function () {
 			await next();
 		});
 
-		app.use(async function middlewareC(ctx, next) { });
+		app.use(async function middlewareC() { });
 
 		request(app.listen())
 			.get('/test/123')
@@ -305,6 +305,37 @@ describe('koa-newrelic middleware traces', function () {
 				expect(newrelic.createTracer.getCall(4).calledWith('Middleware middlewareC')).to.be.true;
 				expect(newrelic.createTracer.getCall(5).calledWith('Middleware middlewareB')).to.be.true;
 				expect(newrelic.createTracer.getCall(6).calledWith('Middleware middlewareA')).to.be.true;
+
+				done();
+			});
+	});
+
+	it('could support instrument ctx.render', (done) => {
+		app.use(koaNewrelic);
+		app.use(async function views(ctx, next) {
+			ctx.render = () => Promise.resolve(true);
+			await next();
+		});
+
+		router.get('/test/:id', async function controller(ctx) {
+			await ctx.render('testing');
+		});
+
+		app.use(router.routes());
+
+		request(app.listen())
+			.get('/test/123')
+			.end(() => {
+				// koanewrelic itself is also a middleware & router dispatch
+				expect(newrelic.createTracer.callCount).to.equal(7);
+
+				expect(newrelic.createTracer.getCall(0).calledWith('Middleware koaNewrelic')).to.be.true;
+				expect(newrelic.createTracer.getCall(1).calledWith('Middleware views')).to.be.true;
+				expect(newrelic.createTracer.getCall(2).calledWith('Middleware dispatch')).to.be.true;
+				expect(newrelic.createTracer.getCall(3).calledWith('Middleware controller')).to.be.true;
+				expect(newrelic.createTracer.getCall(4).calledWith('Render testing')).to.be.true;
+				expect(newrelic.createTracer.getCall(5).calledWith('Middleware views')).to.be.true;
+				expect(newrelic.createTracer.getCall(6).calledWith('Middleware koaNewrelic')).to.be.true;
 
 				done();
 			});
